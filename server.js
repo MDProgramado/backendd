@@ -16,7 +16,7 @@ server.use(jsonServer.bodyParser);
 
 const allowedOrigins = [
   'http://localhost:4200',
-  'https://testflow-app-mu.vercel.app' 
+  'https://testflow-app-pzcq.vercel.app/login' 
 ];
 
 server.use(cors({
