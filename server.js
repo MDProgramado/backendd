@@ -10,7 +10,7 @@ const router = jsonServer.router(path.join(__dirname, 'db.json'));
 
 const allowedOrigins = [
   'http://localhost:4200',
-  'https://testflow-app-pzcq.vercel.app'
+  'https://testflow-app-mb69.vercel.app'
 ];
 const corsOptions = {
   origin: allowedOrigins,
