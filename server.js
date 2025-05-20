@@ -8,28 +8,33 @@ const router = jsonServer.router(path.join(__dirname, 'db.json'));
 const middlewares = jsonServer.defaults();
 
 
-const allowedOrigins = [
-  'http://localhost:4200',
-  'https://testflow-app-pzcq.vercel.app'
-];
-
+const cors = require('cors');
 
 const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Acesso bloqueado pela política CORS'));
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: [
+    'http://localhost:4200',
+    'https://testflow-app-pzcq.vercel.app'
+  ],
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization'],
   credentials: true
 };
 
 
+server.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    console.log('[CORS PRE-FLIGHT]', req.headers.origin, req.headers['access-control-request-method']);
+  }
+  next();
+});
+
+
 server.use(cors(corsOptions));
-server.options('*', cors(corsOptions));
+
+
+server.options('*', cors(corsOptions), (req, res) => {
+  return res.sendStatus(204);
+});
 
 
 server.use(middlewares);
