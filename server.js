@@ -3,41 +3,43 @@ const jsonServer = require('json-server');
 const path = require('path');
 const cors = require('cors');
 
+
 const server = jsonServer.create();
 const router = jsonServer.router(path.join(__dirname, 'db.json'));
-const middlewares = jsonServer.defaults();
 
 
-const cors = require('cors');
-
+const allowedOrigins = [
+  'http://localhost:4200',
+  'https://testflow-app-pzcq.vercel.app'
+];
 const corsOptions = {
-  origin: [
-    'http://localhost:4200',
-    'https://testflow-app-pzcq.vercel.app'
-  ],
-  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization'],
-  credentials: true
+  origin: allowedOrigins,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true 
 };
 
 
+const ENV = process.env.NODE_ENV || 'development';
+console.log(`Inicializando servidor em ambiente: ${ENV}`);
 server.use((req, res, next) => {
   if (req.method === 'OPTIONS') {
-    console.log('[CORS PRE-FLIGHT]', req.headers.origin, req.headers['access-control-request-method']);
+    console.log('[CORS preflight] headers:', {
+      origin: req.headers.origin,
+      acrm: req.headers['access-control-request-method'],
+      acrh: req.headers['access-control-request-headers']
+    });
   }
   next();
 });
 
 
 server.use(cors(corsOptions));
+server.options('*', cors(corsOptions));
 
 
-server.options('*', cors(corsOptions), (req, res) => {
-  return res.sendStatus(204);
-});
+server.use(jsonServer.defaults({ noCors: true }));
 
-
-server.use(middlewares);
 
 server.use(jsonServer.bodyParser);
 
@@ -48,6 +50,8 @@ server.post('/login', (req, res) => {
 
   if (user) {
     const { senha: _, ...userWithoutPassword } = user;
+
+   
     return res.status(200).json({ message: 'Login bem-sucedido', user: userWithoutPassword });
   }
   return res.status(401).json({ message: 'Credenciais inválidas' });
@@ -57,14 +61,7 @@ server.post('/login', (req, res) => {
 server.use(router);
 
 
-server.use((err, req, res, next) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.status(err.status || 500).json({ error: err.message });
-});
-
-
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+  console.log(`Servidor JSON-Server rodando na porta ${PORT} em ambiente ${ENV}`);
 });
