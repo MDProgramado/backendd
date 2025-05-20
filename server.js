@@ -16,20 +16,35 @@ server.use(jsonServer.bodyParser);
 
 const allowedOrigins = [
   'http://localhost:4200',
-  'https://testflow-app-pzcq.vercel.app/' 
+  'https://testflow-app-pzcq.vercel.app' 
 ];
+
+server.use((req, res, next) => {
+  const origin = req.headers.origin;
+  
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  }
+  
+  next();
+});
 
 server.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+
+    if (!origin) return callback(null, true); 
+
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Acesso bloqueado pela política CORS'), false);
+      callback(new Error('Acesso bloqueado pela política CORS'));
     }
   },
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true,
-  optionsSuccessStatus: 204
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 }));
 
 
@@ -45,6 +60,10 @@ server.post('/login', (req, res) => {
   }
 });
 
+server.use((req, res, next) => {
+  res.header('Access-Control-Allow-Credentials', 'true');
+  next();
+});
 
 server.use(router);
 
